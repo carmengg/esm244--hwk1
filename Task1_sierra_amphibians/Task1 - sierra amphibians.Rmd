@@ -17,46 +17,26 @@ library(lubridate)
 
 ```{r}
 # ----- DATA READING & SELECTION ----
-amphibians <- read_excel(here("Task1_sierra_amphibians","sierra_amphibians.xlsx")) # raw data
+# raw data
+amphibians <- read_excel(here("Task1_sierra_amphibians","sierra_amphibians.xlsx")) 
 
 ranas <- amphibians %>% 
-  filter(amphibian_species == "RAMU",    # select mountain yellow-legged frog
-         amphibian_life_stage != "EggMass")   # exclude EggMass life stage
-```
-
-```{r}
-ranas_by_year <- ranas %>% 
-  mutate(year = year(ymd(survey_date))) %>% 
-  group_by(year, amphibian_life_stage) %>% 
-  count()
-
-ggplot(data=ranas_by_year, aes(x=year, y = n)) +
-  geom_line(aes(color=amphibian_life_stage))+
-  geom_point(aes(color=amphibian_life_stage))+
-  labs( x= "Year",
-        y= "Count (n)",
-        color="Life Stage")+
-  scale_fill_discrete(labels = c("Adult", "Subadult", "Tadpole"))+
-  theme_light() 
-    
-```
-
-```{r}
-#ggplot(data=ranas_by_year, aes(fill =amphibian_life_stage ,x=year, y = n)) +
-#  geom_bar(position="dodge", stat="identity")
-    
-```
-
-```{r}
-R <- ranas %>% 
-  mutate(year = year(ymd(survey_date))) %>% 
+  filter(amphibian_species == "RAMU",              # select mountain yellow-legged frog
+         amphibian_life_stage != "EggMass") %>%    # exclude EggMass life stage
+  mutate(year = year(ymd(survey_date))) %>%        # extract year into column
+  relocate(year) %>%                               # relocate year to 1st column
   drop_na()
+```
 
-R <- aggregate( R$amphibian_number, 
-               list(Year = R$year, LifeStage = R$amphibian_life_stage),
+
+```{r}
+RanasYear <- ranas
+RanasYear <- aggregate( RanasYear$amphibian_number, 
+               list(year = RanasYear$year, 
+                    LifeStage = RanasYear$amphibian_life_stage),
                FUN=sum)
 
-ggplot(data=R, aes(x=Year, y = x)) +
+ggplot(data=RanasYear, aes(x=year, y = x)) +
   geom_line(aes(color=LifeStage))+
   geom_point(aes(color=LifeStage), alpha =0.5, cex=2)+
   labs( x= "Year",
@@ -65,4 +45,31 @@ ggplot(data=R, aes(x=Year, y = x)) +
   scale_fill_discrete(labels = c("Adult", "Subadult", "Tadpole"))+
   theme_light() 
 ```
+
+```{r}
+top5lakes <- ranas %>% 
+  filter(amphibian_life_stage %in% c("SubAdult", "Adult"))  %>% 
+  count(lake_id, wt=amphibian_number) %>% 
+  slice_max(n, n=5) 
+
+for(i in 1:5){
+  top5lakes$lake_id[i] <- paste("Lake ", top5lakes$lake_id[i])
+}
+
+ggplot(data = top5lakes, 
+       aes(x=fct_reorder(lake_id,n), 
+           y =n)) +
+  geom_bar(stat = "identity")+
+  labs( x= "Lake ID")
+```
+
+
+
+
+
+
+
+
+
+
 
