@@ -1,0 +1,68 @@
+---
+title: "Task 1 - Sierra Amphibians"
+author: "Carmen Galaz-García"
+date: "1/19/2021"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(here)
+library(readxl) # Read in excel files
+library(lubridate)
+```
+
+
+```{r}
+# ----- DATA READING & SELECTION ----
+amphibians <- read_excel(here("Task1_sierra_amphibians","sierra_amphibians.xlsx")) # raw data
+
+ranas <- amphibians %>% 
+  filter(amphibian_species == "RAMU",    # select mountain yellow-legged frog
+         amphibian_life_stage != "EggMass")   # exclude EggMass life stage
+```
+
+```{r}
+ranas_by_year <- ranas %>% 
+  mutate(year = year(ymd(survey_date))) %>% 
+  group_by(year, amphibian_life_stage) %>% 
+  count()
+
+ggplot(data=ranas_by_year, aes(x=year, y = n)) +
+  geom_line(aes(color=amphibian_life_stage))+
+  geom_point(aes(color=amphibian_life_stage))+
+  labs( x= "Year",
+        y= "Count (n)",
+        color="Life Stage")+
+  scale_fill_discrete(labels = c("Adult", "Subadult", "Tadpole"))+
+  theme_light() 
+    
+```
+
+```{r}
+#ggplot(data=ranas_by_year, aes(fill =amphibian_life_stage ,x=year, y = n)) +
+#  geom_bar(position="dodge", stat="identity")
+    
+```
+
+```{r}
+R <- ranas %>% 
+  mutate(year = year(ymd(survey_date))) %>% 
+  drop_na()
+
+R <- aggregate( R$amphibian_number, 
+               list(Year = R$year, LifeStage = R$amphibian_life_stage),
+               FUN=sum)
+
+ggplot(data=R, aes(x=Year, y = x)) +
+  geom_line(aes(color=LifeStage))+
+  geom_point(aes(color=LifeStage), alpha =0.5, cex=2)+
+  labs( x= "Year",
+        y= "Count (n)",
+        color="Life Stage")+
+  scale_fill_discrete(labels = c("Adult", "Subadult", "Tadpole"))+
+  theme_light() 
+```
+
