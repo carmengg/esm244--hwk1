@@ -5,9 +5,10 @@ date: "1/19/2021"
 output: html_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include =FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning=FALSE)
 
+# ---- LIBRARIES INCLUDED ----
 library(tidyverse)
 library(here)
 library(readxl) # Read in excel files
@@ -17,20 +18,84 @@ library(patchwork)
 
 
 ```{r}
-# ----- DATA READING & SELECTION ----
+# ----- DATA READING  -----
 # raw data
 amphibians <- read_excel(here("Task1_sierra_amphibians","sierra_amphibians.xlsx")) 
 
+# ---- DATA SELECTION ----
 ranas <- amphibians %>% 
   filter(amphibian_species == "RAMU",              # select mountain yellow-legged frog
          amphibian_life_stage != "EggMass") %>%    # exclude EggMass life stage
   mutate(year = year(ymd(survey_date))) %>%        # extract year into column
-  relocate(year) %>%                               # relocate year to 1st column
-  drop_na()
+  relocate(year) %>%                               # relocate year to 1st column for easy reading
+  drop_na()                                        # exclude NA values
+```
+
+
+
+
+```{r}
+# ---- MTN YELLOW FROGS COUNT BY YEAR ----
+
+# --- Count observations by life stage and year
+RanasYear <- ranas %>% 
+  count(amphibian_life_stage, year, wt=amphibian_number)
+
+# --- Create graph 2
+RanasYearGraph <- ggplot(data=RanasYear, aes(x=year, y = n)) +
+  geom_line(aes(color=amphibian_life_stage))+
+  geom_point(aes(colour=amphibian_life_stage), alpha =0.5, cex=2)+  # include pts of count/year
+  labs( title = "Graph 1. \nFrogs Observed by Year",                # update labels
+        x= "Year",
+        y= "Number of frogs observed (n)",
+        color="Life stage")+
+  scale_colour_hue(labels = c("Adult", "Subadult", "Tadpole"))+     # update legend labels
+  theme_light()+                                                    # update theme
+  theme(legend.position = "bottom")                                 # update legend box position
 ```
 
 
 ```{r}
+# ---- LAKES WITH HIGHEST MTN YELLOW FROGS COUNT ACROSS ALL YEARS ----
+
+# --- Selecting top 5 lakes with highest frog count
+top5lakes <- ranas %>% 
+  filter(amphibian_life_stage %in% c("SubAdult", "Adult"))  %>%  # exclude tadpole life stage
+  count(lake_id, wt=amphibian_number) %>% 
+  slice_max(n, n=5)         # select top 5 lakes with highest count
+
+# --- Update lake IDs
+for(i in 1:5){
+  top5lakes$lake_id[i] <- paste("Lake ", top5lakes$lake_id[i])
+}
+
+# --- Create graph 1
+top5graph <- ggplot(data = top5lakes, 
+                    aes(x=fct_reorder(lake_id,n),  # organize in descending order
+                        y =n)) +
+  geom_bar(stat = "identity",
+           color="gray34", fill="gray57")+         # update colors
+  labs( title = "Graph 2.\nTop 5 Lakes with Highest Number of Frogs Observed",
+        x= "Lake ID",
+        y= "Number of frogs observed (n)")+ 
+  theme_light()                                    # update theme
+
+```
+
+
+```{r, fig.width = 10}
+# --- ASSEMBLE COMPOSITE GRAPH
+
+RanasYearGraph | top5graph     # using patchwork library
+```
+
+
+
+
+```{r, include=FALSE}
+
+# COUNTED BY GROUPS USING AGGREGATE
+
 RanasYear <- ranas
 RanasYear <- aggregate( RanasYear$amphibian_number, 
                list(year = RanasYear$year, 
@@ -40,50 +105,15 @@ RanasYear <- aggregate( RanasYear$amphibian_number,
 RanasYearGraph <- ggplot(data=RanasYear, aes(x=year, y = x)) +
   geom_line(aes(color=LifeStage))+
   geom_point(aes(colour=LifeStage), alpha =0.5, cex=2)+
-  labs( title = "Graph 1. Frogs Observed by Year",
+  labs( title = "Graph 1. \nFrogs Observed by Year",
         x= "Year",
         y= "Number of frogs observed (n)",
         color="Life stage")+
   scale_colour_hue(labels = c("Adult", "Subadult", "Tadpole"))+
   theme_light()+
   theme(legend.position = "bottom")    # update legend box position
-  
-  #theme(legend.key = element_rect(fill = "white", colour = "white"))
-RanasYearGraph
+
 ```
-
-```{r}
-top5lakes <- ranas %>% 
-  filter(amphibian_life_stage %in% c("SubAdult", "Adult"))  %>% 
-  count(lake_id, wt=amphibian_number) %>% 
-  slice_max(n, n=5) 
-
-
-for(i in 1:5){
-  top5lakes$lake_id[i] <- paste("Lake ", top5lakes$lake_id[i])
-}
-
-top5graph <- ggplot(data = top5lakes, 
-                    aes(x=fct_reorder(lake_id,n), 
-                        y =n)) +
-  geom_bar(stat = "identity",
-           color="gray34", fill="gray57")+
-  labs( title = "Graph 2. Top 5 Lakes with Highest Number of Frogs Observed",
-        x= "Lake ID",
-        y= "Number of frogs observed (n)")+
-  theme_light()
-
-top5graph
-```
-
-
-```{r, fig.width = 10}
-RanasYearGraph | top5graph
-```
-
-
-
-
 
 
 
