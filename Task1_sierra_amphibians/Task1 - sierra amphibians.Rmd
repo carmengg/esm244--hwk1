@@ -39,13 +39,16 @@ RanasYear <- aggregate( RanasYear$amphibian_number,
 
 RanasYearGraph <- ggplot(data=RanasYear, aes(x=year, y = x)) +
   geom_line(aes(color=LifeStage))+
-  geom_point(aes(color=LifeStage), alpha =0.5, cex=2)+
-  labs( x= "Year",
-        y= "Count (n)",
-        color="Life Stage")+
-  scale_fill_discrete(labels = c("Adult", "Subadult", "Tadpole")) +
-    theme(legend.position = "bottom")+    # update legend box position
-  theme(legend.key = element_rect(fill = "white", colour = "white"))
+  geom_point(aes(colour=LifeStage), alpha =0.5, cex=2)+
+  labs( title = "Graph 1. Frogs Observed by Year",
+        x= "Year",
+        y= "Number of frogs observed (n)",
+        color="Life stage")+
+  scale_colour_hue(labels = c("Adult", "Subadult", "Tadpole"))+
+  theme_light()+
+  theme(legend.position = "bottom")    # update legend box position
+  
+  #theme(legend.key = element_rect(fill = "white", colour = "white"))
 RanasYearGraph
 ```
 
@@ -63,15 +66,19 @@ for(i in 1:5){
 top5graph <- ggplot(data = top5lakes, 
                     aes(x=fct_reorder(lake_id,n), 
                         y =n)) +
-  geom_bar(stat = "identity")+
-  labs( x= "Lake ID")
+  geom_bar(stat = "identity",
+           color="gray34", fill="gray57")+
+  labs( title = "Graph 2. Top 5 Lakes with Highest Number of Frogs Observed",
+        x= "Lake ID",
+        y= "Number of frogs observed (n)")+
+  theme_light()
+
+top5graph
 ```
 
 
 ```{r, fig.width = 10}
- #top5graph / RanasYearGraph & theme_light() & theme(legend.position = "bottom") 
-
- RanasYearGraph | top5graph & theme(legend.position = "bottom") & theme_light()
+RanasYearGraph | top5graph
 ```
 
 
