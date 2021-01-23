@@ -11,7 +11,8 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(here)
 library(readxl) # Read in excel files
-library(lubridate)
+library(lubridate) 
+library(patchwork)
 ```
 
 
@@ -36,14 +37,16 @@ RanasYear <- aggregate( RanasYear$amphibian_number,
                     LifeStage = RanasYear$amphibian_life_stage),
                FUN=sum)
 
-ggplot(data=RanasYear, aes(x=year, y = x)) +
+RanasYearGraph <- ggplot(data=RanasYear, aes(x=year, y = x)) +
   geom_line(aes(color=LifeStage))+
   geom_point(aes(color=LifeStage), alpha =0.5, cex=2)+
   labs( x= "Year",
         y= "Count (n)",
         color="Life Stage")+
-  scale_fill_discrete(labels = c("Adult", "Subadult", "Tadpole"))+
-  theme_light() 
+  scale_fill_discrete(labels = c("Adult", "Subadult", "Tadpole")) +
+    theme(legend.position = "bottom")+    # update legend box position
+  theme(legend.key = element_rect(fill = "white", colour = "white"))
+RanasYearGraph
 ```
 
 ```{r}
@@ -52,18 +55,24 @@ top5lakes <- ranas %>%
   count(lake_id, wt=amphibian_number) %>% 
   slice_max(n, n=5) 
 
+
 for(i in 1:5){
   top5lakes$lake_id[i] <- paste("Lake ", top5lakes$lake_id[i])
 }
 
-ggplot(data = top5lakes, 
-       aes(x=fct_reorder(lake_id,n), 
-           y =n)) +
+top5graph <- ggplot(data = top5lakes, 
+                    aes(x=fct_reorder(lake_id,n), 
+                        y =n)) +
   geom_bar(stat = "identity")+
   labs( x= "Lake ID")
 ```
 
 
+```{r, fig.width = 10}
+ #top5graph / RanasYearGraph & theme_light() & theme(legend.position = "bottom") 
+
+ RanasYearGraph | top5graph & theme(legend.position = "bottom") & theme_light()
+```
 
 
 
