@@ -9,6 +9,85 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 
 library(tidyverse)
-library()
+library(here)
+library(ggfortify)  # for PCA
+library(janitor)
 ```
+
+```{r}
+food <- read.csv(here("Task2_PCA","usda_nutrients.csv")) %>% 
+  clean_names() %>%
+  drop_na()
+```
+
+
+```{r}
+cheeses <- food %>% 
+  filter(str_detect(short_descrip, "CHEESE,"),   # select cheeses
+         str_detect(food_group, "Dairy") ) %>% 
+  select(!(id:short_descrip)) %>%                # select columns
+  select(!(common_name:scientific_name)) %>% 
+  #select(descrip:vit_e_mg) %>% 
+  select(descrip:fiber_g) %>% 
+  mutate(descrip = str_sub(descrip, start=9)) %>% 
+  separate(descrip, 
+           into=c("name", "type"), 
+           sep=",", 
+           extra="merge") %>%
+  filter(!str_detect(name,"fat") &
+         !str_detect(name,"pasteurized") &
+         !str_detect(name,"sodium")) %>% 
+  filter(is.na(type) | str_detect(type,"fat", negate=TRUE)
+           )
+#  filter(!str_detect(name %in% c("fat","pasteurized","sodium"))
+
+```
+
+
+```{r}
+cheeses <- food %>% 
+  filter(str_detect(short_descrip, "CHEESE,"),   # select cheeses
+         str_detect(food_group, "Dairy") ) %>% 
+  select(!(id:short_descrip)) %>%                # select columns
+  select(!(common_name:scientific_name)) %>% 
+  select(descrip:fiber_g) %>% 
+  mutate(descrip = str_sub(descrip, start=9)) %>% 
+  separate(descrip, 
+           into=c("name", "type"), 
+           sep=",", 
+           extra="merge") %>%
+  filter(!str_detect(name,"fat|pasteurized|sodium")) %>% 
+  filter(!str_detect(type,"fat|pasteurized|sodium|with|low") | is.na(type))
+```
+
+
+  filter(!str_detect(type,"fat"), 
+         !str_detect(type,"pasteurized"),
+         !str_detect(type,"sodium"),
+         ) %>% 
+  mutate(group = case_when(
+    name == "mexican" ~ "mex",
+    str_detect(type,"queso")~ "mex"
+  )) %>% 
+  relocate(group)
+```
+
+```{r}
+cheeses_PCA <- cheeses %>% 
+  select(3:8) %>%
+  scale() %>% 
+  prcomp
+
+cheeses_PCA
+```
+
+```{r}
+autoplot(cheeses_PCA,   # automatically recognizes PCA and does biplot
+         data= cheeses,
+         #colour = 'species', 
+         loadings = TRUE,
+         loadings.label=TRUE)  +
+  theme_minimal()  # customize as any ggplot
+```
+
 
