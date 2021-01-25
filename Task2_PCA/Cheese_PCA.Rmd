@@ -1,9 +1,20 @@
 ---
 title: "Principal Component Analysis of Cheeses Nutrtion Data"
+subtitle: "ESM 244 - Advanced Daya Analysis : Homework 1"
 author: "Carmen Galaz-García"
 date: "1/23/2021"
 output: html_document
 ---
+
+
+### Introduction
+In this report we perform a principal component analysis on the nutrition data for 45 types of cheeses and examine whether cheeses with same country of origin form data clusters. 
+The variables used in the analysis are energy (kcal), protein (g), fat (g), carbohydarate (g) and sugar (g) present in $x$ grams of cheese. 
+We chose the variables according to what is usually most visible in the "Nutrition Facts" label in food products. 
+Data 
+
+All analyses are in R version 4.0.2 using RStudio Version 1.3.1093.
+
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
@@ -14,6 +25,7 @@ library(ggfortify)  # for PCA
 library(janitor)
 ```
 
+### Data wrangling
 ```{r}
 # ---- DATA READING ----
 food <- read.csv(here("Task2_PCA","usda_nutrients.csv")) %>% 
@@ -49,6 +61,7 @@ cheeses <- food %>%
   relocate(origin)    # group categorical variables at beginning
 ```
 
+### Principal Component Analysis and Biplot 
 ```{r}
 # ---- Principal Component Analysis ----
 cheeses_PCA <- cheeses %>% 
@@ -56,12 +69,8 @@ cheeses_PCA <- cheeses %>%
   scale() %>% 
   prcomp
 
-cheeses_PCA  
-```
-
-```{r}
 # ----- BIPLOT -----
-autoplot(cheeses_PCA,   # automatically recognizes PCA and does biplot
+cheese_biplot <- autoplot(cheeses_PCA,   # automatically recognizes PCA and does biplot
          data= cheeses,
          colour = 'origin',
 #         shape=FALSE,
@@ -69,6 +78,13 @@ autoplot(cheeses_PCA,   # automatically recognizes PCA and does biplot
          loadings = TRUE,
          loadings.label=TRUE)  +
   theme_minimal()  
+
+# update labels
+cheese_biplot <- cheese_biplot +
+  labs(colour="Country of origin") +
+  scale_color_hue(labels= c("France", "Italy", "Mexico","Netherlands","Switzerland","USA", "Other"))
+
+cheese_biplot
 ```
 
-
+### Exploratory Findings
