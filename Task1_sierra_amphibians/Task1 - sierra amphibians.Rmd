@@ -1,5 +1,5 @@
 ---
-title: "Exploratory Report of Mountain Yellow-Legged Frog Population in the Sierra Lakes"
+title: "Exploratory Report of Mountain Yellow-Legged Frog Population in the Sierra Nevada Lakes"
 subtitle: "ESM 244 - Advanced Daya Analysis : Homework 1, task 1"
 author: "Carmen Galaz-García"
 date: "1/19/2021"
@@ -13,15 +13,16 @@ In this report we explore abundance of mountain yellow-legged frogs (*Rana musco
 Data comes from observations made by the Sierra Lakes Inventory Project. 
 We explore 
 
-(1) how observations of mountain yellow-legged frogs has varied by year and life stage (adult, subadult and tadpole)
+(1) how observations of mountain yellow-legged frogs have varied by year and frog's life stage (adult, subadult and tadpole), and 
 
-(2) the top 5 lakes in the southern Sierra Nevada with the highest number of frogs. In this anlysis we only include adult and subadult frogs. Each lake has a unique five digit identifier. 
+(2) the top 5 lakes in the southern Sierra Nevada with the highest number of adult and subadult frogs. Each lake has a unique five digit identifier. 
 
 All analyses are in R version 4.0.2 using RStudio Version 1.3.1093.
 
 
 ![](`r "https://www.fws.gov/sacramento/es_species/Accounts/Amphibians-Reptiles/mt_yellow_legged_frog/images/MYLF_RickKuyperUSFWS.jpg"`)
 
+Mountain yellow-legged frog.
 Photo Credit: Ricky Kuyper/USFWS
 
 ### Data wrangling
@@ -52,7 +53,7 @@ ranas <- amphibians %>%
 ```
 
 
-### Graph of frog of yearly frog observations by life stage
+### Graph of yearly frog observations by life stage
 
 ```{r}
 # ---- MTN YELLOW FROGS COUNT BY YEAR ----
@@ -109,11 +110,9 @@ top5graph <- ggplot(data = top5lakes,
 RanasYearGraph | top5graph     # using patchwork library
 ```
 **Figure 1.** 
-Total number of frogs observed in the southern Sierra Nevada lakes during each year of the study (1995-1997 and 2000-2002) divided by life stage. 
-Red (adult), green (subgadult) and blue (tadpole) points indicate the number of frogs observed (n) in a given year of the study.
-In Graph 1 each dot corresponds to the number of observed frogs in a given year, the colour 
+Graph 1 shows the total number of frogs observed in the southern Sierra Nevada lakes during each year of the study (1995-1997 and 2000-2002) divided by life stage. 
+Red (adult), green (subadult) and blue (tadpole) points indicate the number of frogs observed (n) in a given year of the study.
 Graph 2 shows the total number of subadult and adult mountain yellow-legged frog observations (n) in the top 5 lakes with the highest count of observed mountain yellow-legged frogs in these life stages. 
-
 Data: Knapp et al. (2020)
 
 ### Citation
