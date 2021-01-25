@@ -10,6 +10,7 @@ output: html_document
 ### Introduction
 In this report we perform a principal component analysis (PCA) on the nutrition data for 45 types of cheeses and examine whether cheeses with the same country of origin form data clusters. 
 The variables used in the analysis are energy (kcal), protein (g), fat (g), carbohydrate (g) and sugar (g) present in $x$ grams of cheese. 
+We assume the quantity $x$ is the same for al cheeses, thought its value was unfortunately not found. 
 We chose the variables according to what is usually most visible in the "Nutrition Facts" label in food products. 
 A PCA analysis is appropriate given the sample size (greater than 10) and since all the indicated variables are continuous. We work under the assumption that variables are linearly related. 
 
@@ -79,11 +80,8 @@ cheese_biplot <- autoplot(cheeses_PCA,   # automatically recognizes PCA and does
          #label.size = 4,
          loadings = TRUE,
          loadings.label=TRUE)  +
-  theme_minimal()  
-
-
-cheese_biplot <- cheese_biplot +
-  labs(colour="Country of origin") +
+  theme_minimal()  +
+  labs(colour="Country of origin") +  # add labels
   scale_color_hue(labels= c("France", "Italy", "Mexico","Netherlands","Switzerland","USA", "Other"))
 
 cheese_biplot
@@ -94,7 +92,7 @@ cheese_biplot
 ### Exploratory Findings
 
 The PCA for our cheeses data set reveals that 71.32% of the variability is explained by the first two principal components. 
-The biplot shown in figure 1 shows there is a similar and large variance with respect to PC1 and PC2 across energy, fat and protein content, while sugar content has a small variance. 
+The biplot in figure 1 shows there is a similar and large variance with respect to PC1 and PC2 across energy, fat and protein content, while sugar content has a small variance. 
 Figure 1 also shows the following major relations between the variables:
 
 - Sugar and protein present in cheese are negatively correlated. 
@@ -104,7 +102,7 @@ Figure 1 also shows the following major relations between the variables:
 
 As for data clusters with respect to the cheese's country of origin the biplot shows that:
 
-- Cheeses from the US form the tightest cluster, with cottage cheese as an outlier. Mexican cheeses also form a small cluster with small coefficients on both PC1 and PC2.
+- Cheeses from the US form the tightest cluster, with cottage cheese as an outlier on the far right. Mexican cheeses also form a small cluster with small coefficients on both PC1 and PC2.
 
 - Italian cheeses are quite spread out along PC1, with shredded parmesan on the far left and ricotta on the far right. 
 
