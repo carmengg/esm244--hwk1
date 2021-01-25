@@ -1,12 +1,12 @@
 ---
-title: "PCA"
+title: "Principal Component Analysis of Cheeses Nutrtion Data"
 author: "Carmen Galaz-García"
 date: "1/23/2021"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning = FALSE)
 
 library(tidyverse)
 library(here)
@@ -15,79 +15,60 @@ library(janitor)
 ```
 
 ```{r}
+# ---- DATA READING ----
 food <- read.csv(here("Task2_PCA","usda_nutrients.csv")) %>% 
-  clean_names() %>%
-  drop_na()
+  clean_names() %>%      
+  drop_na()              # remove NA values
 ```
 
 
 ```{r}
+# ----- DATA SELECTION -----
 cheeses <- food %>% 
   filter(str_detect(short_descrip, "CHEESE,"),   # select cheeses
          str_detect(food_group, "Dairy") ) %>% 
-  select(!(id:short_descrip)) %>%                # select columns
+  select(!(id:short_descrip)) %>%                # select variables used in analysis
   select(!(common_name:scientific_name)) %>% 
-  #select(descrip:vit_e_mg) %>% 
-  select(descrip:fiber_g) %>% 
-  mutate(descrip = str_sub(descrip, start=9)) %>% 
-  separate(descrip, 
+  select(descrip:sugar_g) %>% 
+  mutate(descrip = str_sub(descrip, start=9)) %>% # remove "cheese" from description
+  separate(descrip,                               # separate cheese name from characteristics
            into=c("name", "type"), 
            sep=",", 
            extra="merge") %>%
-  filter(!str_detect(name,"fat") &
-         !str_detect(name,"pasteurized") &
-         !str_detect(name,"sodium")) %>% 
-  filter(is.na(type) | str_detect(type,"fat", negate=TRUE)
-           )
-#  filter(!str_detect(name %in% c("fat","pasteurized","sodium"))
-
-```
-
-
-```{r}
-cheeses <- food %>% 
-  filter(str_detect(short_descrip, "CHEESE,"),   # select cheeses
-         str_detect(food_group, "Dairy") ) %>% 
-  select(!(id:short_descrip)) %>%                # select columns
-  select(!(common_name:scientific_name)) %>% 
-  select(descrip:fiber_g) %>% 
-  mutate(descrip = str_sub(descrip, start=9)) %>% 
-  separate(descrip, 
-           into=c("name", "type"), 
-           sep=",", 
-           extra="merge") %>%
-  filter(!str_detect(name,"fat|pasteurized|sodium")) %>% 
-  filter(!str_detect(type,"fat|pasteurized|sodium|with|low") | is.na(type))
-```
-
-
-  filter(!str_detect(type,"fat"), 
-         !str_detect(type,"pasteurized"),
-         !str_detect(type,"sodium"),
-         ) %>% 
-  mutate(group = case_when(
+  filter(!str_detect(name,"fat|pasteurized|sodium")) %>%     # remove "altered" cheeses
+  filter(!str_detect(type,"fat|pasteurized|sodium|with|low") | is.na(type)) %>% 
+  mutate(origin = case_when(                      # label each cheese by country of origin
     name == "mexican" ~ "mex",
-    str_detect(type,"queso")~ "mex"
+    str_detect(type,"queso")~ "mex",
+    str_detect(name,"cheddar|cottage|monterey|muenster|brick|caraway|colby") ~ "us",
+    str_detect(name,"fontina|parmesan|mozzarella|provolone|ricotta|romano") ~ "it",
+    str_detect(name,"camembert|brie|roquefort|port de salut|blue")~ "fr",
+    str_detect(name,"gruyere|neufchatel|swiss|tilsit") ~ "sw",
+    str_detect(name,"gouda|edam|limburger") ~ "nth"
   )) %>% 
-  relocate(group)
+  relocate(origin)    # group categorical variables at beginning
 ```
 
 ```{r}
+# ---- Principal Component Analysis ----
 cheeses_PCA <- cheeses %>% 
-  select(3:8) %>%
+  select(4:8) %>%    # select numerical variables
   scale() %>% 
   prcomp
 
-cheeses_PCA
+cheeses_PCA  
 ```
 
 ```{r}
+# ----- BIPLOT -----
 autoplot(cheeses_PCA,   # automatically recognizes PCA and does biplot
          data= cheeses,
-         #colour = 'species', 
+         colour = 'origin',
+#         shape=FALSE,
+#         label.size = 2,
          loadings = TRUE,
          loadings.label=TRUE)  +
-  theme_minimal()  # customize as any ggplot
+  theme_minimal()  
 ```
 
 
