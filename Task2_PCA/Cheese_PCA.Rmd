@@ -1,6 +1,6 @@
 ---
-title: "Principal Component Analysis of Cheeses Nutrtion Data"
-subtitle: "ESM 244 - Advanced Daya Analysis : Homework 1"
+title: "Principal Component Analysis of Cheeses Nutrition Data"
+subtitle: "ESM 244 - Advanced Daya Analysis : Homework 1, task 2"
 author: "Carmen Galaz-García"
 date: "1/23/2021"
 output: html_document
@@ -8,10 +8,13 @@ output: html_document
 
 
 ### Introduction
-In this report we perform a principal component analysis on the nutrition data for 45 types of cheeses and examine whether cheeses with same country of origin form data clusters. 
-The variables used in the analysis are energy (kcal), protein (g), fat (g), carbohydarate (g) and sugar (g) present in $x$ grams of cheese. 
+In this report we perform a principal component analysis (PCA) on the nutrition data for 45 types of cheeses and examine whether cheeses with the same country of origin form data clusters. 
+The variables used in the analysis are energy (kcal), protein (g), fat (g), carbohydrate (g) and sugar (g) present in $x$ grams of cheese. 
 We chose the variables according to what is usually most visible in the "Nutrition Facts" label in food products. 
-Data 
+A PCA analysis is appropriate given the sample size (greater than 10) and since all the indicated variables are continuous. We work under the assumption that variables are linearly related. 
+
+The data comes from the *Food nutrient information for raw fruits and veggies from USDA* database of the FoodData Central in the U.S. Department of Agriculture. 
+https://fdc.nal.usda.gov/index.html
 
 All analyses are in R version 4.0.2 using RStudio Version 1.3.1093.
 
@@ -39,8 +42,7 @@ food <- read.csv(here("Task2_PCA","usda_nutrients.csv")) %>%
 cheeses <- food %>% 
   filter(str_detect(short_descrip, "CHEESE,"),   # select cheeses
          str_detect(food_group, "Dairy") ) %>% 
-  select(!(id:short_descrip)) %>%                # select variables used in analysis
-  select(!(common_name:scientific_name)) %>% 
+  select(!(id:short_descrip) & !(common_name:scientific_name)) %>%   # select variables used in analysis
   select(descrip:sugar_g) %>% 
   mutate(descrip = str_sub(descrip, start=9)) %>% # remove "cheese" from description
   separate(descrip,                               # separate cheese name from characteristics
@@ -48,7 +50,7 @@ cheeses <- food %>%
            sep=",", 
            extra="merge") %>%
   filter(!str_detect(name,"fat|pasteurized|sodium")) %>%     # remove "altered" cheeses
-  filter(!str_detect(type,"fat|pasteurized|sodium|with|low") | is.na(type)) %>% 
+  filter(!str_detect(type,"fat|pasteurized|sodium|with|low|imitation") | is.na(type)) %>% 
   mutate(origin = case_when(                      # label each cheese by country of origin
     name == "mexican" ~ "mex",
     str_detect(type,"queso")~ "mex",
@@ -62,8 +64,8 @@ cheeses <- food %>%
 ```
 
 ### Principal Component Analysis and Biplot 
-```{r}
-# ---- Principal Component Analysis ----
+```{r, fig.width = 10}
+# ---- PRINCIPAL COMPONENT ANALYSIS ----
 cheeses_PCA <- cheeses %>% 
   select(4:8) %>%    # select numerical variables
   scale() %>% 
@@ -73,13 +75,13 @@ cheeses_PCA <- cheeses %>%
 cheese_biplot <- autoplot(cheeses_PCA,   # automatically recognizes PCA and does biplot
          data= cheeses,
          colour = 'origin',
-#         shape=FALSE,
-#         label.size = 2,
+         #shape=FALSE,      # takes out points and shows individual labels
+         #label.size = 4,
          loadings = TRUE,
          loadings.label=TRUE)  +
   theme_minimal()  
 
-# update labels
+
 cheese_biplot <- cheese_biplot +
   labs(colour="Country of origin") +
   scale_color_hue(labels= c("France", "Italy", "Mexico","Netherlands","Switzerland","USA", "Other"))
@@ -87,4 +89,24 @@ cheese_biplot <- cheese_biplot +
 cheese_biplot
 ```
 
+**Figure 1.** PCA biplot showing the relationships between energy (kcal), protein (g), fat (g), carbohydrate (g) and sugar (g) present in $x$ grams of cheese. Each dot represents a different type of cheese. The color of a dote indicates the country of origin of the cheese. 
+
 ### Exploratory Findings
+
+The PCA for our cheeses data set reveals that 71.32% of the variability is explained by the first two principal components. 
+The biplot shown in figure 1 shows there is a similar and large variance with respect to PC1 and PC2 across energy, fat and protein content, while sugar content has a small variance. 
+Figure 1 also shows the following major relations between the variables:
+
+- Sugar and protein present in cheese are negatively correlated. 
+- Carbohydrates seem to be quite unrelated to all other variables.
+
+- Energy and fat are positively correlated. 
+
+As for data clusters with respect to the cheese's country of origin the biplot shows that:
+
+- Cheeses from the US form the tightest cluster, with cottage cheese as an outlier. Mexican cheeses also form a small cluster with small coefficients on both PC1 and PC2.
+
+- Italian cheeses are quite spread out along PC1, with shredded parmesan on the far left and ricotta on the far right. 
+
+- Gjetost cheese (a kind of Norwegian cheese) on the top seems like the  biggest outlier. 
+
